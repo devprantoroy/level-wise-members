@@ -1,0 +1,48 @@
+ //function to view in a table
+ {{ showUserLevel(auth()->user()->id, $lv_no ) }}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ //function for merge 
+ function showBelow($id){
+    
+    $arr = array();
+    $under_ref = \App\User::where('refer',$id)->get();
+    foreach($under_ref as $u){
+        array_push($arr,$u->id);
+    }
+    
+    return $arr;
+    
+}
+
+
+
+function showUserLevel($id, $level){
+    $under_ref = \App\User::where('refer',$id)->with(['lending','addressgg'])->get();
+    $gnl = General::first();
+    $myref = showBelow($id);
+            for ($i=1; $i <= $level ; $i++) { 
+                $nxt = array();
+                    foreach($myref as $uu){
+                        $n = showBelow($uu);
+                        $nxt = array_merge($nxt, $n);
+                    }
+                    
+                    $myref = $nxt;
+            }
+            foreach($nxt as $uu){
+                $data = \App\User::where('id',$uu)->with(['lending','addressgg'])->first();
+                echo " <tr>";
+                echo " <td>$data->username</td>";
+                echo '<td>'.$data->lending->sum('amount').' '.$gnl->cursym.'</td>';
+                echo '<td>'.$data->addressgg->sum('balance').' '.$gnl->cursym.'</td>';
+                echo "</tr>";
+
+            }
+
+}
